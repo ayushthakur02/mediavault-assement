@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { bulkSetStatus } from '@/api/client';
 import { AssetDetail } from '@/features/assets/AssetDetail';
 import { AssetGrid } from '@/features/assets/AssetGrid';
 import { useAssets } from '@/features/assets/useAssets';
 import { statusLabel } from '@/lib/format';
 import type { Asset, AssetStatus, AssetQuery } from '@/lib/types';
+import useDebounce from './hooks/useDebounce';
 
 const STATUSES: AssetStatus[] = ['draft', 'in_review', 'approved', 'archived'];
 const SORTS: Array<{ value: NonNullable<AssetQuery['sort']>; label: string }> = [
@@ -16,14 +17,27 @@ const SORTS: Array<{ value: NonNullable<AssetQuery['sort']>; label: string }> = 
 
 export function App() {
   const [q, setQ] = useState('');
+  const [conditionedQ, setConditionedQ] = useState('')
   const [status, setStatus] = useState<AssetStatus[]>([]);
   const [sort, setSort] = useState<NonNullable<AssetQuery['sort']>>('updatedAt:desc');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [activeId, setActiveId] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const debouncedQ = useDebounce(q, 500)
+  useEffect(() => {
+    if(debouncedQ === '') {
+      setConditionedQ(debouncedQ)
+    }
+    else if(debouncedQ.length < 3) {
+
+    }
+    else if(debouncedQ.length >= 3) {
+      setConditionedQ(debouncedQ)
+    }
+  },[debouncedQ])
 
   // Every keystroke sends a request. Nothing is debounced or cancelled.
-  const { items, total, loading, error } = useAssets({ q, status, sort, limit: 24 });
+  const { items, total, loading, error } = useAssets({ q: conditionedQ, status, sort, limit: 24 });
 
   function toggleSelect(id: string) {
     setSelectedIds((prev) => {
