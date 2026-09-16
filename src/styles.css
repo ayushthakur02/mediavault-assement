@@ -15,7 +15,11 @@
 
 body {
   margin: 0;
-  font: 15px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font:
+    15px/1.5 system-ui,
+    -apple-system,
+    "Segoe UI",
+    sans-serif;
   color: var(--ink);
   background: var(--bg);
 }
@@ -134,10 +138,11 @@ button:disabled {
   flex: 1;
   overflow: auto;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-auto-rows: max-content;
+  align-items: start;
   gap: 12px;
   padding: 16px;
-  align-content: start;
 }
 
 .card {
@@ -161,6 +166,16 @@ button:disabled {
   aspect-ratio: 16 / 10;
   object-fit: cover;
   background: var(--bg-soft);
+}
+
+.card__thumb--missing {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 160px;
+  background: #f3f4f6;
+  color: #6b7280;
+  font-size: 14px;
 }
 .card__body {
   padding: 8px 10px 10px;
