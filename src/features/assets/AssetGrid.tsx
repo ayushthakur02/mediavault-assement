@@ -1,6 +1,8 @@
-import { thumbnailUrl } from '@/api/client';
-import { formatBytes, formatDate, statusLabel } from '@/lib/format';
-import type { Asset } from '@/lib/types';
+import { thumbnailUrl } from "@/api/client";
+import { formatBytes, formatDate, statusLabel } from "@/lib/format";
+import type { Asset } from "@/lib/types";
+import { useState } from "react";
+import { AssetThumbnail } from "./AssetThumbnail";
 
 interface Props {
   assets: Asset[];
@@ -14,12 +16,20 @@ interface Props {
  * Baseline grid. Renders every row it is given, re-renders every card on any
  * selection change, and is not reachable by keyboard.
  */
-export function AssetGrid({ assets, selectedIds, activeId, onToggleSelect, onOpen }: Props) {
+export function AssetGrid({
+  assets,
+  selectedIds,
+  activeId,
+  onToggleSelect,
+  onOpen,
+}: Props) {
   if (assets.length === 0) {
     return (
       <div className="empty">
         <p>Nothing matches these filters.</p>
-        <p className="muted">Clear the search box or widen the status filter.</p>
+        <p className="muted">
+          Clear the search box or widen the status filter.
+        </p>
       </div>
     );
   }
@@ -30,19 +40,22 @@ export function AssetGrid({ assets, selectedIds, activeId, onToggleSelect, onOpe
         <div
           key={asset.id}
           className={
-            'card' +
-            (selectedIds.has(asset.id) ? ' card--selected' : '') +
-            (activeId === asset.id ? ' card--active' : '')
+            "card" +
+            (selectedIds.has(asset.id) ? " card--selected" : "") +
+            (activeId === asset.id ? " card--active" : "")
           }
           onClick={() => onOpen(asset.id)}
         >
-          <img className="card__thumb" src={thumbnailUrl(asset.id)} alt="" />
+          <AssetThumbnail asset={asset} />
           <div className="card__body">
             <p className="card__name">{asset.name}</p>
             <p className="muted">
-              {asset.kind} · {formatBytes(asset.sizeBytes)} · {formatDate(asset.updatedAt)}
+              {asset.kind} · {formatBytes(asset.sizeBytes)} ·{" "}
+              {formatDate(asset.updatedAt)}
             </p>
-            <span className={`pill pill--${asset.status}`}>{statusLabel(asset.status)}</span>
+            <span className={`pill pill--${asset.status}`}>
+              {statusLabel(asset.status)}
+            </span>
           </div>
           <input
             type="checkbox"
