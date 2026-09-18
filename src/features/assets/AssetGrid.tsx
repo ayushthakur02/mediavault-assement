@@ -5,6 +5,8 @@ import { useState } from "react";
 import { AssetThumbnail } from "./AssetThumbnail";
 
 interface Props {
+  loadMoreRef: React.RefObject<HTMLDivElement>;
+  error: string | null;
   assets: Asset[];
   selectedIds: Set<string>;
   activeId: string | null;
@@ -17,6 +19,8 @@ interface Props {
  * selection change, and is not reachable by keyboard.
  */
 export function AssetGrid({
+  loadMoreRef,
+  error,
   assets,
   selectedIds,
   activeId,
@@ -66,6 +70,7 @@ export function AssetGrid({
           />
         </div>
       ))}
+      {!error && <div ref={loadMoreRef} id="load-more-sentinel" aria-hidden="true" />}
     </div>
   );
 }

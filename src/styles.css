@@ -130,6 +130,13 @@ button:disabled {
 
 .content {
   display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.asset-layout {
+  display: flex;
   flex: 1;
   min-height: 0;
 }
@@ -272,6 +279,14 @@ button:disabled {
   padding: 48px 16px;
   text-align: center;
   flex: 1;
+}
+
+.load-more {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 24px 0;
+  border-top: 1px solid var(--line);
 }
 
 @media (max-width: 720px) {
