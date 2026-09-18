@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { bulkSetStatus } from "@/api/client";
 import { AssetDetail } from "@/features/assets/AssetDetail";
 import { AssetGrid } from "@/features/assets/AssetGrid";
@@ -10,6 +10,7 @@ import { getInitialQueryFromUrl } from "./utils/queryParams";
 import { SORTS, STATUSES } from "./constants/assets.constants";
 
 export function App() {
+  const loadMoreRef = useRef<HTMLDivElement>(null);
   const [initialQuery] = useState(getInitialQueryFromUrl());
   console.log("initialQuery", initialQuery);
   const [q, setQ] = useState(initialQuery.q);
@@ -25,18 +26,59 @@ export function App() {
   useEffect(() => {
     if (debouncedQ === "") {
       setConditionedQ(debouncedQ);
-    } else if (debouncedQ.length < 3) {
     } else if (debouncedQ.length >= 3) {
       setConditionedQ(debouncedQ);
     }
   }, [debouncedQ]);
 
-  const { items, total, loading, error } = useAssets({
-    q: conditionedQ,
-    status,
-    sort,
-    limit: 24,
+  const {
+  items,
+  total,
+  loading,
+  loadingMore,
+  nextCursor,
+  error,
+  loadMore,
+  retry
+} = useAssets({
+  q: conditionedQ,
+  status,
+  sort,
+  limit: 24,
+});
+
+useEffect(() => {
+  const sentinel = loadMoreRef.current;
+
+  if (!sentinel || loading || !nextCursor || loadingMore || error) {
+    return;
+  }
+
+  const observer = new IntersectionObserver(
+    ([entry]) => {
+      if (entry?.isIntersecting) {
+        void loadMore();
+      }
+    },
+    {
+      root: document.querySelector(".grid"),
+      rootMargin: "300px",
+    },
+  );
+
+  observer.observe(sentinel);
+
+  return () => observer.disconnect();
+}, [nextCursor, loading, loadingMore, loadMore, error]);
+
+useEffect(() => {
+  const grid = document.querySelector<HTMLElement>(".grid");
+
+  grid?.scrollTo({
+    top: 0,
+    behavior: "auto",
   });
+}, [conditionedQ, status, sort]);
 
   function toggleSelect(id: string) {
     setSelectedIds((prev) => {
@@ -128,21 +170,36 @@ export function App() {
       {error && <p className="error">{error}</p>}
 
       <main className="content">
-        <AssetGrid
-          assets={items}
-          selectedIds={selectedIds}
-          activeId={activeId}
-          onToggleSelect={toggleSelect}
-          onOpen={setActiveId}
-        />
-        {activeId && (
-          <AssetDetail
-            id={activeId}
-            onClose={() => setActiveId(null)}
-            onSaved={handleSaved}
-          />
-        )}
-      </main>
+  <div className="asset-layout">
+    <AssetGrid
+      loadMoreRef={loadMoreRef}
+      error={error}
+      assets={items}
+      selectedIds={selectedIds}
+      activeId={activeId}
+      onToggleSelect={toggleSelect}
+      onOpen={setActiveId}
+    />
+    {activeId && (
+      <AssetDetail
+        id={activeId}
+        onClose={() => setActiveId(null)}
+        onSaved={handleSaved}
+      />
+    )}
+  </div>
+    {loadingMore && (
+        <div className="load-more">
+          <span className="muted">Loading more…</span>
+        </div>
+      )}
+    {error && (
+        <div className="load-more">
+          <span className="error">{error}</span>
+          <button onClick={retry}>Retry</button>
+        </div>
+      )}
+</main>
     </div>
   );
 }
